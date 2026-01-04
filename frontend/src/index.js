@@ -10,7 +10,12 @@ const PUBLISHABLE_KEY = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-if (!PUBLISHABLE_KEY) {
+// Validation: Check if key is missing or looks like a duplicate (common Vercel error)
+const isKeyMissing = !PUBLISHABLE_KEY;
+const isKeyDuplicated = PUBLISHABLE_KEY && (PUBLISHABLE_KEY.includes('pk_test_') && PUBLISHABLE_KEY.indexOf('pk_test_', 10) > -1);
+const isKeyMalformed = PUBLISHABLE_KEY && !PUBLISHABLE_KEY.startsWith('pk_');
+
+if (isKeyMissing || isKeyDuplicated || isKeyMalformed) {
   root.render(
     <div style={{ 
       display: 'flex', 
@@ -25,7 +30,15 @@ if (!PUBLISHABLE_KEY) {
       backgroundColor: '#fef2f2'
     }}>
       <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Configuration Error</h1>
-      <p style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Missing <code>REACT_APP_CLERK_PUBLISHABLE_KEY</code></p>
+      <p style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>
+        {isKeyMissing ? 'Missing ' : 'Invalid '} 
+        <code>REACT_APP_CLERK_PUBLISHABLE_KEY</code>
+      </p>
+      {isKeyDuplicated && (
+        <p style={{ color: '#b91c1c', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+          Duplicate key detected! You might have pasted it twice.
+        </p>
+      )}
       <p style={{ color: '#374151' }}>Please check your <code>frontend/.env</code> file.</p>
     </div>
   );
